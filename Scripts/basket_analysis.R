@@ -30,18 +30,59 @@ for (i in 1:nrow(trans_df)) {
   nitems <- c(nitems, sum(trans_df[i,]))
 }
 
-################################### Subsetting ###################################
-ptrans@itemInfo$labels <- labels$Category
-ptrans_df <- as.data.frame(as(ptrans,"matrix"))
-for (i in c(1:ncol(ptrans_df))){
-  ptrans_df[,i] <- as.integer(ptrans_df[,i])
-}
-for (i in nrow(ptrans_df)){
-  ptrans_df$accesories <- sum(ptrans_df[i,which(colnames(ptrans_df) == "Accessories")])
-}
+################################## New dataset #####################################
+trans_df$nitems <- nitems
+trans_df$laptops <- trans_df[,which(colnames(trans_df) == "LG Touchscreen Laptop")] +
+                      trans_df[,which(colnames(trans_df) == "Acer Aspire")] +
+                      trans_df[,which(colnames(trans_df) == "HP Laptop")] +
+  trans_df[,which(colnames(trans_df) == "ASUS Chromebook")] +
+  trans_df[,which(colnames(trans_df) == "Apple Macbook Pro")] +
+  trans_df[,which(colnames(trans_df) == "Apple MacBook Air")] +
+  trans_df[,which(colnames(trans_df) == "Dell Laptop")] +
+  trans_df[,which(colnames(trans_df) == "Eluktronics Pro Gaming Laptop")] +
+  trans_df[,which(colnames(trans_df) == "Alienware AW17R4-7345SLV-PUS 17\" Laptop")] +
+  trans_df[,which(colnames(trans_df) == "HP Notebook Touchscreen Laptop PC")]
+trans_df$desktop <- trans_df[,which(colnames(trans_df) == "Lenovo Desktop Computer")] +
+  trans_df[,which(colnames(trans_df) == "iMac")] +
+  trans_df[,which(colnames(trans_df) == "HP Desktop")] +
+  trans_df[,which(colnames(trans_df) == "ASUS Desktop")] +
+  trans_df[,which(colnames(trans_df) == "Dell Desktop")] +
+  trans_df[,which(colnames(trans_df) == "Intel Desktop")] +
+  trans_df[,which(colnames(trans_df) == "Acer Desktop")] +
+  trans_df[,which(colnames(trans_df) == "CYBERPOWER Gamer Desktop")] +
+  trans_df[,which(colnames(trans_df) == "Dell 2 Desktop")] 
+trans_df$tablet <- trans_df[,which(colnames(trans_df) == "iPad")] +
+  trans_df[,which(colnames(trans_df) == "iPad Pro")] +
+  trans_df[,which(colnames(trans_df) == "Fire HD Tablet")] +
+  trans_df[,which(colnames(trans_df) == "Samsung Galaxy Tab")] +
+  trans_df[,which(colnames(trans_df) == "Kindle")]
+trans_df$printer <- trans_df$`Epson Printer`+ trans_df$`HP Wireless Printer` +
+  trans_df$`Canon Office Printer` + trans_df$`Brother Printer` + trans_df$`DYMO Label Manker`
+#Plots
+trans_df$comp_items <- trans_df$nitems - trans_df$nmain
+#Laptop count
+ggplot(trans_df, aes(x = laptops)) + geom_bar(bins = 50) + 
+  scale_x_continuous(breaks=seq(0, 9, 1))
+#Desktop count
+ggplot(trans_df, aes(x = desktop)) + geom_bar(bins = 50) 
+#Tablet count
+ggplot(trans_df, aes(x = tablet)) + geom_bar(bins = 50) + 
+  scale_y_continuous(breaks=seq(0, 8000, 1000))
+#Printer count
+ggplot(trans_df, aes(x = printer)) + geom_bar(bins = 50) 
+#Printer vs tablet
+ggplot(trans_df, aes(x = tablet, y = printer)) + geom_jitter()
+#Printer vs desktop
+ggplot(trans_df, aes(x = desktop, y = printer)) + geom_jitter()
+#Laptops vs printer
+ggplot(trans_df, aes(x = laptops, y = printer)) + geom_jitter()
+#La
 
-ptrans_df <- unite(ptrans_df,col = "Accessories",
-                   ptrans_df[,which(colnames(ptrans_df) %in% "Accessories")], remove = T)
+
+
+ggplot(trans_df, aes(x = nmain, y = comp_items), color = "lightblue") + geom_jitter()
+
+
 inspect (trans) # You can view the transactions. 
 #Is there a way to see a certain # of transactions?
 inspect (trans[1:10])
