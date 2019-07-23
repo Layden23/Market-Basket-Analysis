@@ -58,8 +58,15 @@ trans_df$tablet <- trans_df[,which(colnames(trans_df) == "iPad")] +
   trans_df[,which(colnames(trans_df) == "Kindle")]
 trans_df$printer <- trans_df$`Epson Printer`+ trans_df$`HP Wireless Printer` +
   trans_df$`Canon Office Printer` + trans_df$`Brother Printer` + trans_df$`DYMO Label Manker`
-#Plots
+trans_df$nmain <- trans_df$printer + trans_df$laptops + trans_df$desktop +
+  trans_df$tablet
+trans_df$ncomp <- trans_df$nitems - trans_df$nmain
 trans_df$comp_items <- trans_df$nitems - trans_df$nmain
+trans_df$value <- 10*trans_df$nmain + trans_df$ncomp
+
+#Plots
+ggplot(trans_df, aes(x = value)) + geom_histogram(colour = "blue",bins = 100) +
+  scale_x_continuous(breaks=seq(0, 120,5))
 #Laptop count
 ggplot(trans_df, aes(x = laptops)) + geom_bar(bins = 50) + 
   scale_x_continuous(breaks=seq(0, 9, 1))
@@ -76,12 +83,15 @@ ggplot(trans_df, aes(x = tablet, y = printer)) + geom_jitter()
 ggplot(trans_df, aes(x = desktop, y = printer)) + geom_jitter()
 #Laptops vs printer
 ggplot(trans_df, aes(x = laptops, y = printer)) + geom_jitter()
-#La
+#Laptop vs desktop
+ggplot(trans_df, aes(x = laptops, y = desktop)) + geom_jitter()
 
 
 
 ggplot(trans_df, aes(x = nmain, y = comp_items), color = "lightblue") + geom_jitter()
-
+################################### Subsetting ######################################
+corporate <- filter(trans_df, nmain >= 2 | ncomp >= 3)
+retailer <- filter(trans_df,nmain <= 1 & ncomp <= 2)
 
 inspect (trans) # You can view the transactions. 
 #Is there a way to see a certain # of transactions?
