@@ -89,6 +89,7 @@ ggplot(trans_df, aes(x = laptops, y = desktop)) + geom_jitter()
 
 
 ggplot(trans_df, aes(x = nmain, y = comp_items), color = "lightblue") + geom_jitter()
+
 ################################### Subsetting ######################################
 corporate <- filter(trans_df, nmain >= 2 | ncomp >= 3)
 retailer <- filter(trans_df,nmain <= 1 & ncomp <= 2)
@@ -123,6 +124,8 @@ rules
 length(rules)
 summary(rules)
 inspect(rules)
+
+plot(rules, method="graph",control=list(type="items"))
 
 ###Finding rules for specific item and removing redundant rules
 
