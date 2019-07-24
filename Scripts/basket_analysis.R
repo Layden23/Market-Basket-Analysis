@@ -27,7 +27,7 @@ trans@itemInfo$category <- labels$Category
 
 trans_matrix <- as(trans,"matrix")
 trans_df <- as.data.frame(trans_matrix)
-#Turning into 1s and 0s.
+#Turning into a sparematrix of 1s and 0s.
 for (i in 1:ncol(trans_df)){
   trans_df[,i] <- as.integer(trans_df[,i])
 }
@@ -89,9 +89,9 @@ trans_df$ncomp <- trans_df$nitems - trans_df$nmain
 trans_df$value <- 10*trans_df$nmain + trans_df$ncomp
 
 ################################ Visualizations ############################
-products <- c(laptops, desktop)
+products <- c("laptops", "desktop")
 for (i in products){
-  print(ggplot(trans_df, aes_string(x = value)) + 
+  print(ggplot(trans_df, aes_string(x = i)) + 
           geom_histogram(colour = "blue",bins = 100))
 }
 ggplot(trans_df, aes(x = value)) + geom_histogram(colour = "blue",bins = 100) +
@@ -153,6 +153,9 @@ itemFrequencyPlot(trans_retail,topN=10,type="relative",col=brewer.pal(8,'Pastel2
 
 rules_corpro <- apriori (trans_corp, parameter = list(supp = 0.01, conf = 0.01, 
                                                  minlen = 2))
+
+rules_corpro[!is.redundant(rules_corpro)]
+
 summary(rules_corpro)
 #The most populars products
 corpro_sup <- inspect(head(sort(rules_corpro, by ="support"),10))
@@ -199,6 +202,6 @@ retcat_lift <- inspect(head(sort(rules_retcat, by ="lift"),10))
 
 ############################### Rules Visualization ############################
 plot(rules_retcat, method = "graph",control=list(type="items"), max = 10)
-plot(rules_retcat, method = "scatterplot")
-plot(rules_retcat, method = "grouped")
+plot(rules_retcat, method = "scatterplot",control=list(type="items"), max = 10)
+plot(rules_retcat, method = "grouped",control=list(type="items"), max = 10)
 
