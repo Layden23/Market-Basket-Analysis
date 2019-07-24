@@ -136,8 +136,10 @@ trans_corp <- as(corporate == 1, "transactions")
 trans_retail <- as(retailer == 1, "transactions")
 trans_corp@itemInfo$labels <- labels$ProductType
 trans_corp@itemInfo$category <- labels$Category
+trans_corp@itemInfo$brand <- labels$Brand
 trans_retail@itemInfo$labels <- labels$ProductType
 trans_retail@itemInfo$category <- labels$Category
+trans_retail@itemInfo$brand <- labels$Brand
 
 itemFrequencyPlot(trans_corp,topN=10,type="relative",col=brewer.pal(8,'Pastel2'), 
                   main="Corp Relative Item Frequency Plot")
@@ -185,6 +187,15 @@ corpro_con <- inspect(head(sort(rules_corpro, by ="confidence"),10))
 #Lift
 corpro_lift <- inspect(head(sort(rules_corpro, by ="lift"),10))
 
+corpro <- rbind(corpro_con, corpro_lift, corpro_sup)
+
+corpro2_prodvscat <- corpro
+
+corpro3_catvsprod <- corpro
+
+corpro2_prodvscat$rhs <- mgsub(corpro2_prodvscat$rhs, pattern = labels$ProductType, replacement = labels$Category)
+
+corpro3_catvsprod$lhs <- mgsub(corpro3_catvsprod$lhs, pattern = labels$ProductType, replacement = labels$Category)
 ################################### Corported by category ########################
 trans_corcat <- aggregate(trans_corp, by = "category")
 rules_corcat <- apriori(trans_corcat, parameter = list(supp = 0.05, conf = 0.01, 
@@ -199,6 +210,14 @@ corcat_lift <- inspect(head(sort(rules_corcat, by ="lift"),10))
 
 corcat <- rbind(corcat_con, corcat_lift, corcat_sup)
 
+corcat2_prodvscat <- corcat
+
+corcat3_catvsprod <- corcat
+
+corcat2_prodvscat$lhs <- mgsub(corcat2_prodvscat$lhs, pattern = labels$Category, replacement = labels$ProductType)
+
+corcat3_catvsprod$rhs <- mgsub(corcat3_catvsprod$rhs, pattern = labels$Category, replacement = labels$ProductType)
+
 ggplot(corcat, aes(x= confidence, y=lift)) + geom_point() +geom_smooth()+ 
   scale_x_continuous(breaks=seq(0, 5,0.1))
 
@@ -206,6 +225,36 @@ ggplot(corcat, aes(x= support, y=lift)) + geom_point() +geom_smooth()+
   scale_x_continuous(breaks=seq(0, 5,0.1))
 
 ggplot(corcat, aes(x= confidence, y=support)) + geom_point() +geom_smooth()+ 
+  scale_x_continuous(breaks=seq(0, 5,0.1))
+################################### Corported by brand ########################
+trans_corbr <- aggregate(trans_corp, by = "brand")
+rules_corbr <- apriori(trans_corbr, parameter = list(supp = 0.05, conf = 0.01, 
+                                                       minlen = 2))
+summary(rules_corbr)
+#The most populars categories
+corbr_sup <- inspect(head(sort(rules_corbr, by ="support"),10))
+#Items that have high chances of being bought together
+corbr_con <- inspect(head(sort(rules_corbr, by ="confidence"),10))
+#Lift
+corbr_lift <- inspect(head(sort(rules_corbr, by ="lift"),10))
+
+corbr <- rbind(corbr_con, corbr_lift, corbr_sup)
+
+corbr2_prodvsbr <- corbr
+
+corbr3_brvsprod <- corbr
+
+corbr2_prodvsbr$lhs <- mgsub(corbr2_prodvsbr$lhs, pattern = labels$Brand, replacement = labels$ProductType)
+
+corbr3_brvsprod$rhs <- mgsub(corbr3_brvsprod$rhs, pattern = labels$Brand, replacement = labels$ProductType)
+
+ggplot(corbr, aes(x= confidence, y=lift)) + geom_point() +geom_smooth()+ 
+  scale_x_continuous(breaks=seq(0, 5,0.1))
+
+ggplot(corbr, aes(x= support, y=lift)) + geom_point() +geom_smooth()+ 
+  scale_x_continuous(breaks=seq(0, 5,0.1))
+
+ggplot(corbr, aes(x= confidence, y=support)) + geom_point() +geom_smooth()+ 
   scale_x_continuous(breaks=seq(0, 5,0.1))
 ################################### Retailers by products ########################
 rules_retpro <- apriori(trans_retail, parameter = list(supp = 0.005, conf = 0.01, 
@@ -241,6 +290,14 @@ retcat_lift <- inspect(head(sort(rules_retcat, by ="lift"),10))
 
 retcat <- rbind(retcat_con, retcat_sup, retcat_lift)
 
+retcat2_prodvscat <- retcat
+
+retcat3_catvsprod <- retcat
+
+retcat2_prodvscat$lhs <- mgsub(retcat2_prodvscat$lhs, pattern = labels$Category, replacement = labels$ProductType)
+
+retcat3_catvsprod$rhs <- mgsub(retcat3_catvsprod$rhs, pattern = labels$Category, replacement = labels$ProductType)
+
 plot(retcat, method = "graph",control=list(type="items"), max = 10)
 
 ggplot(retcat, aes(x= support, y=confidence)) + geom_point() + geom_abline()
@@ -250,6 +307,40 @@ ggplot(retcat, aes(x= support, y=lift)) + geom_point() + geom_abline()
 ggplot(retcat, aes(x= confidence, y=lift)) + geom_point() +geom_smooth()+ 
   scale_x_continuous(breaks=seq(0, 5,0.1))
 
+################################### Retailers by brand ########################
+trans_retbr <- aggregate(trans_retail, by = "brand")
+rules_retbr <- apriori(trans_retbr, parameter = list(supp = 0.05, conf = 0.01, 
+                                                     minlen = 2))
+summary(rules_corbr)
+#The most populars categories
+retbr_sup <- inspect(head(sort(rules_retbr, by ="support"),10))
+#Items that have high chances of being bought together
+retbr_con <- inspect(head(sort(rules_retbr, by ="confidence"),10))
+#Lift
+retbr_lift <- inspect(head(sort(rules_retbr, by ="lift"),10))
+
+retbr <- rbind(retbr_sup, retbr_con, retbr_lift)
+
+retbr$lhs <- mgsub(retbr$lhs, pattern = labels$Brand, replacement = labels$ProductType)
+retbr$rhs <- mgsub(retbr$rhs, pattern = labels$Brand, replacement = labels$ProductType)
+
+
+retbr2_prodvsbr <- retbr
+
+retbr3_brvsprod <- retbr
+
+retbr2_prodvsbr$lhs <- mgsub(retbr2_prodvsbr$lhs, pattern = labels$Brand, replacement = labels$ProductType)
+
+retbr3_brvsprod$rhs <- mgsub(retbr3_brvsprod$rhs, pattern = labels$Brand, replacement = labels$ProductType)
+
+ggplot(retbr, aes(x= confidence, y=lift)) + geom_point() +geom_smooth()+ 
+  scale_x_continuous(breaks=seq(0, 5,0.1))
+
+ggplot(retbr, aes(x= support, y=lift)) + geom_point() +geom_smooth()+ 
+  scale_x_continuous(breaks=seq(0, 5,0.1)) 
+
+ggplot(retbr, aes(x= confidence, y=support)) + geom_point() +geom_smooth()+ 
+  scale_x_continuous(breaks=seq(0, 5,0.1))
 ############################### Rules Visualization ############################
 plot(rules_retcat, method = "graph",control=list(type="items"), max = 10)
 plot(rules_retcat, method = "scatterplot")
