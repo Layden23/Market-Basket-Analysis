@@ -17,3 +17,7 @@ arulesViz
 RColorBrewer
 readxl
 tidyr
+lattice
+survival
+Formula
+Hmisc

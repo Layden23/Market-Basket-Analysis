@@ -6,6 +6,7 @@ output:
   pdf_document:
     df_print: kable
     toc: true
+    toc_depth: 4
     number_sections: false
 ---
 
@@ -31,50 +32,96 @@ knitr::opts_knit$set(root.dir = normalizePath(path.expand(path),
 opts_knit$set(width=75)
 ```
 
-## Executive Summary
-### Introduction
-Danielle has asked the team to perform a market basket analysis to help Blackwell's board of directors better understand the clientele that Electronidex is currently serving and if Electronidex would be an optimal acquisition.
-
-A dataset of transactions has been provided. The dataset contains 9835 transactions and 125 different products over a 30-day period, or about 327 transactions a day. This tells us the retailer is neither large, nor small.
-
-
-### Results and conclussions
-After the analysis, we conclude Electronidex's sales are to be categorized in two forms: retail (B2C) and corporate (B2B). Had we had this information previous to our analysis, it would have saved time in the exploration phase.
-
-Interesting patterns and item relationships found:
-Retail:
->
-
-
-
-Would Blackwell benefit in selling Electronidex's items?
-
-
-
-
-### Limitations and observations:
- Properties of the dataset:
- 1. The iMac is the product most bought, in 20% of all transactions. This high number stands out considering the large variety of products, especially being the iMac a pricey product. If this number is representative of all sales throughout the year, then Electronidex is potentially profitable.
- 2. The mean of items bought per transaction is almost 5. Logically, I would say most people in the real world would buy 1 or 2 items per transactions most frequently, in an eletronics store.
-
-
-### Recommendations
-**Blackwell should acquire Electronidex**
-If Blackwell does acquire Electronidex, do you have any recommendations for Blackwell? (Ex: cross-selling #items, sale promotions, should they remove items, etc.)
-
-
-## Loading Packages and importing datasets
-
-```{r, warning = FALSE, message = FALSE, results='hide'}
+```{r, echo = FALSE, warning = FALSE, message = FALSE, results='hide'}
 pacman::p_load(readr,rstudioapi,ggplot2,party,dplyr,arules,arulesViz,
                RColorBrewer,readxl,tidyr,Hmisc)
 setwd("..")
 trans <- read.transactions("./Datasets/ElectronidexTransactions2017.csv", 
                   format = "basket",sep=",", rm.duplicates=TRUE)
 labels <- read_excel("./Datasets/ElectronidexItems2017.xlsx")
+
+results <- read.csv("./Datasets/results.csv")
+```
+\clearpage
+## Executive Summary
+### Introduction
+Danielle has asked the team to perform a market basket analysis to help Blackwell's board of directors better understand the clientele that Electronidex is currently serving and if Electronidex would be an optimal acquisition.
+
+A dataset of transactions has been provided. The dataset contains 9835 transactions and 125 different products over a 30-day period, or about 327 transactions a day. This tells us the retailer is neither large, nor small.
+
+### Results, conclusions and recommendations
+After the analysis, we conclude Electronidex's sales are to be categorized in two forms: retail (B2C) and corporate (B2B). Had we had this information previous to our analysis, it would have saved time in the exploration phase.
+Interesting patterns and item relationships found:
+
+Retail by products:
+
+```{r, echo = FALSE}
+results[c(1,2,3),2:4]
 ```
 
-## Preprocessing
+Retail by category:
+
+```{r, echo = FALSE}
+results[4:6,c(-1,-5)]
+```
+
+
+Corporate by products: 
+
+```{r, echo = FALSE}
+results[7:9,c(-1,-5)]
+```
+
+Corporate by categories:
+
+```{r, echo = FALSE}
+results[10:12,c(2,3,4)]
+```
+
+
+
+**Would Blackwell benefit in selling Electronidex's items?**
+As a conclusion, we do recommend that Blackwell acquires Electronidex for the following reasons:  
+
++ **Product portfolio diversification and customer base expansion:**
+Having previously analyzed the current products that Blackwell supplies to its customers, we believe that new product categories will help reach new customers. Additionally, all clients acquired with Eltronidex will become part of Blackwell's customer base.
+The combination of diversifaction and expansion will consequentially increase Blackwell's revenue.
+
++ **Beneficial Product Association:**
+Since Blackwell currently works with close to 50% of brands shared by Electronidex; Blackwell can take advantage of the discovered associations. This will imply the average amount of Blackwell's items per transaction will be increased.
+
++ **New potential strategies to adopt by Blackwell's sales team:**
+The aforementioned results opens new marketing possibilities.
+Extracting the associations with high confidence and low support (sold less often), it is possible to boost sales for those products (through advertisement and other sales actions). The increase in sales number of the said products will bring in increased revenue since we are confident the new transactions will increase sales volume.
+Blackwell could create some item packs of those items that are more often purchased at the same transaction, in order to also increase sales volume.
+Additionally, the rules that we found can be also helpful to provide recommendations to users when they purchase through the e-commerce platorm.
+
+
+
+### Limitations and observations:
+Properties of the dataset:  
+
+1. The iMac is the product most bought, in 20% of all transactions. This high number stands out considering the large variety of products, especially being the iMac a pricey product. If this number is representative of all sales throughout the year, then Electronidex is potentially profitable.
+2. The mean of items bought per transaction is almost 5. Logically, we would say most people in the real world would buy 1 or 2 items per transactions most frequently, in an eletronics store.
+
+\clearpage
+
+## Technical Report
+
+### Loading Packages and importing datasets
+
+```{r, eval = FALSE, warning = FALSE, message = FALSE, results='hide'}
+pacman::p_load(readr,rstudioapi,ggplot2,party,dplyr,arules,arulesViz,
+               RColorBrewer,readxl,tidyr,Hmisc)
+setwd("..")
+trans <- read.transactions("./Datasets/ElectronidexTransactions2017.csv", 
+                  format = "basket",sep=",", rm.duplicates=TRUE)
+labels <- read_excel("./Datasets/ElectronidexItems2017.xlsx")
+
+results <- read.csv("./Datasets/results.csv")
+```
+
+### Preprocessing
 
 ```{r}
 labels[is.na(labels)] <-"Unknown"
@@ -91,7 +138,7 @@ for (i in 1:ncol(trans_df)){
 
 ```
 
-## Feature Engineering
+### Feature Engineering
 
 ```{r}
 #Counting number of items
@@ -102,6 +149,7 @@ for (i in 1:nrow(trans_df)) {
 trans_df$nitems <- nitems
 trans_df$laptops <- trans_df[,which(colnames(trans_df) == "LG Touchscreen Laptop")] +
                       trans_df[,which(colnames(trans_df) == "Acer Aspire")] +
+  
                       trans_df[,which(colnames(trans_df) == "HP Laptop")] +
   trans_df[,which(colnames(trans_df) == "ASUS Chromebook")] +
   trans_df[,which(colnames(trans_df) == "Apple Macbook Pro")] +
@@ -133,8 +181,9 @@ trans_df$ncomp <- trans_df$nitems - trans_df$nmain
 trans_df$value <- 10*trans_df$nmain + trans_df$ncomp
 ```
 
-## Visualizations 
+### Visualizations 
 
+Here we make several plots to see the distribution of our variables and also see the frequency of the products bought.
 ```{r, warning = FALSE, message= FALSE}
 products <- c("laptops", "desktop","printer","tablet")
 for (i in products){
@@ -165,7 +214,7 @@ ggplot(trans_df, aes(x = nmain, y = ncomp)) +
 
 ```
 
-## Splitting dataframe between corporates and retailers
+### Splitting dataframe between corporates and retailers
 
 ```{r}
 #Filtering. Corporate will be those transactions with more than 2 main products and 3 complements.
@@ -195,85 +244,118 @@ itemFrequencyPlot(trans_retail,topN=10,type="relative",col=brewer.pal(8,'Pastel2
                   main="Retail Relative Item Frequency Plot")
 ```
 
-## Creating rules via apriori algorithm
+### Creating rules via apriori algorithm
+```{r}
+#Function to create the average
+averagetor <- function(corpro){
+  
+a <- scale(corpro[,which(colnames(corpro) %in% c("support","confidence","lift"))])
 
-### Rules for products in corporate transactions
+average <- a[,which(colnames(a)=="support")] + a[,which(colnames(a)=="confidence")] + a[,which(colnames(a)=="lift")]
+corpro <- cbind(corpro,average)
+corpro <- corpro[order(-average),]
 
-```{r, warning=FALSE,message=FALSE,results='hide'}
-rules_corpro <- apriori (trans_corp, parameter = list(supp = 0.01, conf = 0.01, 
-                                                 minlen = 2, maxlen = 4))
-rules_corpro <- rules_corpro[!is.redundant(rules_corpro)]
+return(corpro)
+}
 ```
 
+#### Rules for products in corporate transactions
 
-```{r, warning=FALSE,message=FALSE}
+```{r, warning = FALSE, message = FALSE, results = 'hide'}
+rules_corpro <- apriori (trans_corp, parameter = list(supp = 0.001, conf = 0.01, 
+                                                 minlen = 2))
+rules_corpro <- rules_corpro[!is.redundant(rules_corpro)]
+
 summary(rules_corpro)
+as(rules_corpro, "data.frame")
 #The most populars products
 corpro_sup <- inspect(head(sort(rules_corpro, by ="support"),10))
 #Items that have high chances of being bought together
 corpro_con <- inspect(head(sort(rules_corpro, by ="confidence"),10))
 #Lift
 corpro_lift <- inspect(head(sort(rules_corpro, by ="lift"),10))
+
+corpro <- rbind(corpro_sup,corpro_con,corpro_lift)
+corpro <- averagetor(corpro)
+```
+```{r}
+corpro[,which(colnames(corpro) %in% c("lhs","Var.2","rhs","average"))]
 ```
 
-### Rules for categories in corporate transactions
+
+#### Rules for categories in corporate transactions
 
 ```{r, warning=FALSE,message=FALSE,results='hide'}
 trans_corcat <- aggregate(trans_corp, by = "category")
-rules_corcat <- apriori(trans_corcat, parameter = list(supp = 0.01, conf = 0.01, 
+rules_corcat <- apriori(trans_corcat, parameter = list(supp = 0.001, conf = 0.01, 
                                                  minlen = 2, maxlen = 4))
 rules_corcat <- rules_corcat[!is.redundant(rules_corcat)]
-```
 
-
-```{r, warning=FALSE,message=FALSE}
 summary(rules_corcat)
+as(rules_corcat, "data.frame")
 #The most populars categories
 corcat_sup <- inspect(head(sort(rules_corcat, by ="support"),10))
 #Items that have high chances of being bought together
 corcat_con <- inspect(head(sort(rules_corcat, by ="confidence"),10))
 #Lift
 corcat_lift <- inspect(head(sort(rules_corcat, by ="lift"),10))
+
+corcat <- rbind(corcat_sup, corcat_con, corcat_lift)
+
+corcat <- averagetor(corcat)
 ```
-### Rules for products in retailers transactions
+```{r}
+corcat[,which(colnames(corcat) %in% c("lhs","Var.2","rhs","average"))]
+```
+
+#### Rules for products in retailers transactions
 
 ```{r, warning=FALSE,message=FALSE,results='hide'}
 rules_retpro <- apriori(trans_retail, parameter = list(supp = 0.001, conf = 0.01, 
-                                                 minlen = 2, maxlen = 4))
+                                                 minlen = 2))
 rules_retpro <- rules_retpro[!is.redundant(rules_retpro)]
-```
 
-
-```{r, warning=FALSE,message=FALSE}
 summary(rules_retpro)
+as(rules_retpro, "data.frame")
 #The most populars products
 retpro_sup <- inspect(head(sort(rules_retpro, by ="support"),10))
 #Items that have high chances of being bought together
 retpro_con <- inspect(head(sort(rules_retpro, by ="confidence"),10))
 #Lift
 retpro_lift <- inspect(head(sort(rules_retpro, by ="lift"),10))
+retpro <- rbind(retpro_sup, retpro_con, retpro_lift)
+retpro <- averagetor(retpro)
+```
+```{r}
+retpro[,which(colnames(retpro) %in% c("lhs","Var.2","rhs","average"))]
 ```
 
-### Rules for categories in retailers transactions
+
+#### Rules for categories in retailers transactions
 
 ```{r, warning=FALSE,message=FALSE,results='hide'}
 trans_retcat <- aggregate(trans_retail, by = "category")
-rules_retcat <- apriori(trans_retcat,parameter = list(supp = 0.01, conf = 0.01, 
+rules_retcat <- apriori(trans_retcat,parameter = list(supp = 0.001, conf = 0.01, 
                                                       minlen = 2, maxlen = 4))
 rules_retcat <- rules_retcat[!is.redundant(rules_retcat)]
-```
-
-```{r, warning=FALSE,message=FALSE}
 summary(rules_retcat)
+as(rules_retcat, "data.frame")
 #The most populars products
 retcat_sup <- inspect(head(sort(rules_retcat, by ="support"),10))
 #Items that have high chances of being bought together
 retcat_con <- inspect(head(sort(rules_retcat, by ="confidence"),10))
 #Lift
 retcat_lift <- inspect(head(sort(rules_retcat, by ="lift"),10))
+
+retcat <- rbind(retcat_sup, retcat_con, retcat_lift)
+retcat <- averagetor(retcat)
+```
+```{r}
+retcat[,which(colnames(retcat) %in% c("lhs","Var.2","rhs","average"))]
 ```
 
-## Rules visualizations
+
+### Rules visualizations
 
 ```{r, warning=FALSE, message=FALSE}
 methods <- c("graph","scatterplot")
@@ -286,6 +368,15 @@ for (i in methods) {
        main = paste(capitalize(i),"of rules of products bought by retailers"))
   plot(rules_retcat, method = i,control=list(type="items"), max = 10,
        main = paste(capitalize(i),"of rules of categories bought by retailers"))
-  
 }
 ```
+
+```{r}
+results <- rbind(retpro[1:3,which(colnames(retpro) %in% c("lhs","Var.2","rhs","average"))],
+                 retcat[1:3,which(colnames(retcat) %in% c("lhs","Var.2","rhs","average"))],
+                 corpro[1:3,which(colnames(corpro) %in% c("lhs","Var.2","rhs","average"))],
+                 corcat[1:3,which(colnames(corcat) %in% c("lhs","Var.2","rhs","average"))])
+
+write.csv(results, "results.csv")
+```
+
