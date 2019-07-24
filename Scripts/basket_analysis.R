@@ -1,6 +1,12 @@
 ############################ Installing packages #################################
 pacman::p_load(readr,rstudioapi,ggplot2,party,dplyr,arules,arulesViz,
-               RColorBrewer,readxl,tidyr)
+               RColorBrewer,readxl,tidyr,BiocManager,devtools,
+               shiny)
+
+
+source_gist(id='706a28f832a33e90283b')
+
+
 #Setting directory path
 current_path = getActiveDocumentContext()$path
 setwd(dirname(current_path))
@@ -25,46 +31,12 @@ trans_df <- as.data.frame(trans_matrix)
 for (i in 1:ncol(trans_df)){
   trans_df[,i] <- as.integer(trans_df[,i])
 }
-#Sumrows
+#Counting number of items
 nitems <- c()
 for (i in 1:nrow(trans_df)) {
   nitems <- c(nitems, sum(trans_df[i,]))
 }
-################################### Plan of Attack ###############################
-#inspect (trans) # You can view the transactions.
-#Is there a way to see a certain # of transactions?
-#inspect (trans[1:10])
-# Number of transactions.
-#length (trans) 
-# Number of items per transaction
-#size (trans) 
-# Lists the transactions by conversion (LIST must be capitalized)
-#LIST(trans) 
-# To see the item labels
-itemLabels(trans)
-
-# Apriori algorithm 
-rules <- apriori (trans, parameter = list(supp = 0.01, conf = 0.5))
-
-rules
-length(rules)
-summary(rules)
-inspect(rules)
-
-############################ Visualization 
-
-itemFrequencyPlot(trans,topN=10,type="absolute",col=brewer.pal(8,'Pastel2'),
-                  main="Absolute Item Frequency Plot")
-itemFrequencyPlot(trans,topN=20,type="relative",col=brewer.pal(8,'Pastel2'), 
-                  main="Relative Item Frequency Plot")
-itemFrequencyPlot(trans, support = 0.1, cex.names=0.8)
-
-image(sample(trans, 125))
-image(trans[25])
-
-
-
-plot(rules_retcat, method="graph",control=list(type="items"))
+################################## Functions ##################################
 
 #Removing redundant rules
 cleanrules <- function(rules){
@@ -81,34 +53,6 @@ srules <- function(i){
   rules <- rules[-subsetRules] 
   return(rules)
 }
-
-imac_rules <- srules("iMac")
-summary(imac_rules)
-irules <- list()
-for (i in names(x)){
-  irules[[i]] <- srules(i)
-}
-############################### See by category 
-trans_category <- aggregate(trans, by = "category")
-rules_category <- apriori (trans_category, parameter = list(supp = 0.01, conf = 0.01,
-                                                            minlen = 2))
-summary(rules_category)
-#The most populars categories
-inspect(head(sort(rules_category, by ="support"),10))
-#Items that have high chances of being bought together
-inspect(head(sort(rules_category, by ="confidence"),10))
-#Lift
-inspect(head(sort(rules_category, by ="lift"),10))
-############################### See by brand 
-rules_brand <- apriori (trans_brand, parameter = list(supp = 0.01, conf = 0.01,
-                                                      minlen = 2))
-summary(rules_brand)
-#The most populars categories
-inspect(head(sort(rules_brand, by ="support"),20))
-#Items that have high chances of being bought together
-inspect(head(sort(rules_category, by ="confidence"),20))
-#Lift
-inspect(head(sort(rules_category, by ="lift"),20))
 
 ################################## New dataset #####################################
 trans_df$nitems <- nitems
@@ -144,7 +88,12 @@ trans_df$nmain <- trans_df$printer + trans_df$laptops + trans_df$desktop +
 trans_df$ncomp <- trans_df$nitems - trans_df$nmain
 trans_df$value <- 10*trans_df$nmain + trans_df$ncomp
 
-#Plots
+################################ Visualizations ############################
+products <- c(laptops, desktop)
+for (i in products){
+  print(ggplot(trans_df, aes_string(x = value)) + 
+          geom_histogram(colour = "blue",bins = 100))
+}
 ggplot(trans_df, aes(x = value)) + geom_histogram(colour = "blue",bins = 100) +
   scale_x_continuous(breaks=seq(0, 120,5))
 #Laptop count
@@ -204,35 +153,36 @@ itemFrequencyPlot(trans_retail,topN=10,type="relative",col=brewer.pal(8,'Pastel2
 
 rules_corpro <- apriori (trans_corp, parameter = list(supp = 0.01, conf = 0.01, 
                                                  minlen = 2))
-
+summary(rules_corpro)
 #The most populars products
-inspect(head(sort(rules_corpro, by ="support"),10))
+corpro_sup <- inspect(head(sort(rules_corpro, by ="support"),10))
 #Items that have high chances of being bought together
-inspect(head(sort(rules_corpro, by ="confidence"),10))
+corpro_con <- inspect(head(sort(rules_corpro, by ="confidence"),10))
 #Lift
-inspect(head(sort(rules_corpro, by ="lift"),10))
+corpro_lift <- inspect(head(sort(rules_corpro, by ="lift"),10))
 
 ################################### Corported by category ########################
 trans_corcat <- aggregate(trans_corp, by = "category")
-rules_corcat <- apriori(trans_corcat, parameter = list(supp = 0.01, conf = 0.01, 
+rules_corcat <- apriori(trans_corcat, parameter = list(supp = 0.05, conf = 0.01, 
                                                  minlen = 2))
+summary(rules_corcat)
 #The most populars categories
-inspect(head(sort(rules_corcat, by ="support"),10))
+corcat_sup <- inspect(head(sort(rules_corcat, by ="support"),10))
 #Items that have high chances of being bought together
-inspect(head(sort(rules_corcat, by ="confidence"),10))
+corcat_con <- inspect(head(sort(rules_corcat, by ="confidence"),10))
 #Lift
-inspect(head(sort(rules_corcat, by ="lift"),10))
+corcat_lift <- inspect(head(sort(rules_corcat, by ="lift"),10))
 
 ################################### Retailers by products ########################
 rules_retpro <- apriori(trans_retail, parameter = list(supp = 0.005, conf = 0.01, 
                                                  minlen = 2))
 summary(rules_retpro)
 #The most populars products
-inspect(head(sort(rules_retpro, by ="support"),10))
+retpro_sup <- inspect(head(sort(rules_retpro, by ="support"),10))
 #Items that have high chances of being bought together
-inspect(head(sort(rules_retpro, by ="confidence"),10))
+retpro_con <- inspect(head(sort(rules_retpro, by ="confidence"),10))
 #Lift
-inspect(head(sort(rules_retpro, by ="lift"),10))
+retpro_lift <- inspect(head(sort(rules_retpro, by ="lift"),10))
 
 ################################### Retailers by category ########################
 trans_retcat <- aggregate(trans_retail, by = "category")
@@ -240,12 +190,15 @@ rules_retcat <- apriori(trans_retcat,parameter = list(supp = 0.01, conf = 0.01,
                                                       minlen = 2))
 summary(rules_retcat)
 #The most populars products
-inspect(head(sort(rules_retcat, by ="support"),10))
+retcat_sup <- inspect(head(sort(rules_retcat, by ="support"),10))
 #Items that have high chances of being bought together
-inspect(head(sort(rules_retcat, by ="confidence"),10))
+retcat_con <- inspect(head(sort(rules_retcat, by ="confidence"),10))
 #Lift
-inspect(head(sort(rules_retcat, by ="lift"),10))
+retcat_lift <- inspect(head(sort(rules_retcat, by ="lift"),10))
 
 
 ############################### Rules Visualization ############################
-plot(rules_retcat, method="graph",control=list(type="items"), max = 10)
+plot(rules_retcat, method = "graph",control=list(type="items"), max = 10)
+plot(rules_retcat, method = "scatterplot")
+plot(rules_retcat, method = "grouped")
+
