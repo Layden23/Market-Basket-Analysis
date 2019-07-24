@@ -1,7 +1,7 @@
 ############################ Installing packages #################################
 pacman::p_load(readr,rstudioapi,ggplot2,party,dplyr,arules,arulesViz,
                RColorBrewer,readxl,tidyr,BiocManager,devtools,
-               shiny)
+               shiny, textclean)
 
 
 source_gist(id='706a28f832a33e90283b')
@@ -24,8 +24,10 @@ summary(trans)
 head(itemInfo(trans))
 trans@itemInfo$labels<- labels$ProductType
 trans@itemInfo$category <- labels$Category
+trans@itemInfo$brand <- labels$Brand
 
 trans_matrix <- as(trans,"matrix")
+
 trans_df <- as.data.frame(trans_matrix)
 #Turning into 1s and 0s.
 for (i in 1:ncol(trans_df)){
@@ -149,6 +151,28 @@ itemFrequencyPlot(trans_retail,topN=10,type="relative",col=brewer.pal(8,'Pastel2
 #  rules[[i]]<- apriori(formula(i), parameter = list(supp = 0.01, conf = 0.01, 
 #                                                        minlen = 2))
 #}
+
+####### See relationship between Lift, Confidence and Support for top300 rules ########
+
+rules2 <- apriori (trans, parameter = list(supp = 0.01, conf = 0.01, 
+                                                minlen = 2))
+#The most populars products
+rules2_sup <- inspect(head(sort(rules2, by ="support"),100))
+#Items that have high chances of being bought together
+rules2_con <- inspect(head(sort(rules2, by ="confidence"),100))
+#Lift
+rules2_lift <- inspect(head(sort(rules2, by ="lift"),100))
+
+rules2df <- rbind(rules2_con, rules2_lift, rules2_sup)
+
+ggplot(rules2df, aes(x= confidence, y=lift)) + geom_point() + geom_smooth()+ 
+  scale_x_continuous(breaks=seq(0, 5,0.1))
+
+ggplot(rules2df, aes(x= support, y=lift)) + geom_point() +geom_smooth()+ 
+  scale_x_continuous(breaks=seq(0, 5,0.1))
+
+ggplot(rules2df, aes(x= confidence, y=support, col=lift)) + geom_point() +geom_smooth()+ 
+  scale_x_continuous(breaks=seq(0, 5,0.1))
 ################################### Corported by products ########################
 
 rules_corpro <- apriori (trans_corp, parameter = list(supp = 0.01, conf = 0.01, 
@@ -173,6 +197,16 @@ corcat_con <- inspect(head(sort(rules_corcat, by ="confidence"),10))
 #Lift
 corcat_lift <- inspect(head(sort(rules_corcat, by ="lift"),10))
 
+corcat <- rbind(corcat_con, corcat_lift, corcat_sup)
+
+ggplot(corcat, aes(x= confidence, y=lift)) + geom_point() +geom_smooth()+ 
+  scale_x_continuous(breaks=seq(0, 5,0.1))
+
+ggplot(corcat, aes(x= support, y=lift)) + geom_point() +geom_smooth()+ 
+  scale_x_continuous(breaks=seq(0, 5,0.1))
+
+ggplot(corcat, aes(x= confidence, y=support)) + geom_point() +geom_smooth()+ 
+  scale_x_continuous(breaks=seq(0, 5,0.1))
 ################################### Retailers by products ########################
 rules_retpro <- apriori(trans_retail, parameter = list(supp = 0.005, conf = 0.01, 
                                                  minlen = 2))
@@ -184,6 +218,15 @@ retpro_con <- inspect(head(sort(rules_retpro, by ="confidence"),10))
 #Lift
 retpro_lift <- inspect(head(sort(rules_retpro, by ="lift"),10))
 
+retpro <- rbind(retpro_con, retpro_lift, retpro_sup)
+
+retpro2_prodvscat <- retpro
+
+retpro3_catvsprod <- retpro
+
+retpro2_prodvscat$rhs <- mgsub(retpro2_prodvscat$rhs, pattern = labels$ProductType, replacement = labels$Category)
+
+retpro3_catvsprod$lhs <- mgsub(retpro3_catvsprod$lhs, pattern = labels$ProductType, replacement = labels$Category)
 ################################### Retailers by category ########################
 trans_retcat <- aggregate(trans_retail, by = "category")
 rules_retcat <- apriori(trans_retcat,parameter = list(supp = 0.01, conf = 0.01, 
@@ -196,6 +239,16 @@ retcat_con <- inspect(head(sort(rules_retcat, by ="confidence"),10))
 #Lift
 retcat_lift <- inspect(head(sort(rules_retcat, by ="lift"),10))
 
+retcat <- rbind(retcat_con, retcat_sup, retcat_lift)
+
+plot(retcat, method = "graph",control=list(type="items"), max = 10)
+
+ggplot(retcat, aes(x= support, y=confidence)) + geom_point() + geom_abline()
+
+ggplot(retcat, aes(x= support, y=lift)) + geom_point() + geom_abline()
+
+ggplot(retcat, aes(x= confidence, y=lift)) + geom_point() +geom_smooth()+ 
+  scale_x_continuous(breaks=seq(0, 5,0.1))
 
 ############################### Rules Visualization ############################
 plot(rules_retcat, method = "graph",control=list(type="items"), max = 10)
