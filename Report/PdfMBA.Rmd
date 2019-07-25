@@ -53,26 +53,26 @@ A dataset of transactions has been provided. The dataset contains 9835 transacti
 After the analysis, we conclude Electronidex's sales are to be categorized in two forms: retail (B2C) and corporate (B2B). Had we had this information previous to our analysis, it would have saved time in the exploration phase.
 Interesting patterns and item relationships found:
 
-Retail by products:
+Retailers buy the following products togeher:
 
 ```{r, echo = FALSE}
 results[c(1,2,3),2:4]
 ```
 
-Retail by category:
+Retailers buy the following categories togeher:
 
 ```{r, echo = FALSE}
 results[4:6,c(-1,-5)]
 ```
 
 
-Corporate by products: 
+Corporates buy the following products togeher:
 
 ```{r, echo = FALSE}
 results[7:9,c(-1,-5)]
 ```
 
-Corporate by categories:
+Corporates buy the following products togeher:
 
 ```{r, echo = FALSE}
 results[10:12,c(2,3,4)]
@@ -216,6 +216,8 @@ ggplot(trans_df, aes(x = nmain, y = ncomp)) +
 
 ### Splitting dataframe between corporates and retailers
 
+We'll split the dataframe to obtain the rules for each diferent types of costumers. 
+
 ```{r}
 #Filtering. Corporate will be those transactions with more than 2 main products and 3 complements.
 corporate <- filter(trans_df, nmain >= 2 | ncomp >= 3)
@@ -245,6 +247,8 @@ itemFrequencyPlot(trans_retail,topN=10,type="relative",col=brewer.pal(8,'Pastel2
 ```
 
 ### Creating rules via apriori algorithm
+
+We will evaluate our rules by creating and average of the support, confidence and lift. First we'll rescale these three variables and then add them together.
 ```{r}
 #Function to create the average
 averagetor <- function(corpro){
