@@ -143,13 +143,13 @@ itemFrequencyPlot(trans_corp,topN=10,type="relative",col=brewer.pal(8,'Pastel2')
 itemFrequencyPlot(trans_retail,topN=10,type="relative",col=brewer.pal(8,'Pastel2'), 
                   main="Retail Relative Item Frequency Plot")
 ################################### Loop try ###############################
-#rules <- list(
-#transactions <- c("trans_corp","trans_retail")
-#for (i in transactions){
-#  rules[[i]]<- apriori(formula(i), parameter = list(supp = 0.01, conf = 0.01, 
-#                                                        minlen = 2))
-#}
-################################### Corported by products ########################
+rules <- list()
+transactions <- c("trans_corp","trans_retail")
+for (i in transactions){
+  rules[[i]]<- apriori(formula(i), parameter = list(supp = 0.01, conf = 0.01, 
+                                                        minlen = 2))
+}
+ ################################### Corported by products ########################
 
 rules_corpro <- apriori (trans_corp, parameter = list(supp = 0.01, conf = 0.01, 
                                                  minlen = 2))
@@ -205,3 +205,8 @@ plot(rules_retcat, method = "graph",control=list(type="items"), max = 10)
 plot(rules_retcat, method = "scatterplot",control=list(type="items"), max = 10)
 plot(rules_retcat, method = "grouped",control=list(type="items"), max = 10)
 
+#Turning into a sparematrix of 1s and 0s.
+for (i in 1:ncol(trans_df)){
+  trans_df[,i] <- as.character(trans_df[,i])
+}
+arulesApp(trans_df)

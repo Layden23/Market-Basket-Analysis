@@ -2,12 +2,12 @@
 "[7]","{Samsung Monitor}","=>","{CYBERPOWER Gamer Desktop}",2.42236818264101
 "[1]","{CYBERPOWER Gamer Desktop}","=>","{Apple Earpods}",2.04358757324602
 "[2]","{Apple Earpods}","=>","{CYBERPOWER Gamer Desktop}",1.22681330516785
-"[1]1","{Monitors}","=>","{Desktop}",4.71166437631362
-"[2]1","{Desktop}","=>","{Monitors}",2.96618514651759
-"[3]","{Computer Mice}","=>","{Desktop}",1.18705904282282
+"[3]1","{Accessories,Keyboard}","=>","{Desktop}",1.7222509634381
+"[5]2","{Accessories,Keyboard}","=>","{Desktop}",1.7222509634381
+"[1]1","{Computer Cords,Mouse and Keyboard Combo}","=>","{Laptops}",1.70961068962635
 "[1]2","{HP Laptop}","=>","{iMac}",2.41533690266097
 "[9]","{ViewSonic Monitor}","=>","{iMac}",1.71277741844753
-"[2]2","{iMac}","=>","{HP Laptop}",1.50006653974164
+"[2]1","{iMac}","=>","{HP Laptop}",1.50006653974164
 "[1]3","{Laptops}","=>","{Desktop}",2.02621536308558
 "[7]1","{Laptops,Monitors}","=>","{Desktop}",1.72231159037174
-"[2]3","{Desktop}","=>","{Laptops}",1.0851043988833
+"[2]2","{Desktop}","=>","{Laptops}",1.0851043988833
