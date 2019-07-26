@@ -1,0 +1,10 @@
+name: Publish Document
+title:
+username:
+account: rpubs
+server: rpubs.com
+hostUrl: rpubs.com
+appId: https://api.rpubs.com/api/v1/document/515167/e11b637a36634c11bc30a59f1b793e25
+bundleId: https://api.rpubs.com/api/v1/document/515167/e11b637a36634c11bc30a59f1b793e25
+url: http://rpubs.com/Layden/515167
+when: 1564065360.46502
