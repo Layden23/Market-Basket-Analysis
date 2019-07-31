@@ -18,6 +18,8 @@ trans <- read.transactions("./Datasets/ElectronidexTransactions2017.csv",
                   format = "basket",sep=",", rm.duplicates=TRUE)
 labels <- read_excel("./Datasets/ElectronidexItems2017.xlsx")
 
+summary(labels)
+sum(is.na(labels))
 labels[is.na(labels)] <-"Unknown"
 
 summary(trans)
@@ -137,10 +139,10 @@ trans_corp@itemInfo$category <- labels$Category
 trans_retail@itemInfo$labels <- labels$ProductType
 trans_retail@itemInfo$category <- labels$Category
 
-itemFrequencyPlot(trans_corp,topN=10,type="relative",col=brewer.pal(8,'Pastel2'), 
-                  main="Corp Relative Item Frequency Plot")
+itemFrequencyPlot(trans,topN=10,type="relative",col=brewer.pal(8,'Pastel2'), 
+                  main="Relative Item Frequency Plot")
 
-itemFrequencyPlot(trans_retail,topN=10,type="relative",col=brewer.pal(8,'Pastel2'), 
+itemFrequencyPlot(trans,topN=10,type="relative",col=brewer.pal(8,'Pastel2'), 
                   main="Retail Relative Item Frequency Plot")
 ################################### Loop try ###############################
 rules <- list()
